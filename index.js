@@ -76,7 +76,7 @@ async function run() {
     });
     app.get("/contests", async (req, res) => {
       const contestsCollection = client.db("cse326").collection("contests");
-      const result = await contestsCollection.find().toArray();
+      const result = await contestsCollection.find({ ...req?.query }).toArray();
       console.log(result);
       res.send(result);
     });
@@ -87,10 +87,25 @@ async function run() {
       console.log(result);
       res.send(result);
     });
+
     app.delete("/contests/:id", async (req, res) => {
       const { id } = req?.params;
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.deleteOne({ _id: ObjectId(id) });
+      console.log(result);
+      res.send(result);
+    });
+    app.put("/contests/:id", async (req, res) => {
+      const { id } = req?.params;
+      const { status } = req?.body;
+      const contestsCollection = client.db("cse326").collection("contests");
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status,
+        },
+      };
+      const result = await contestsCollection.updateOne(filter, updateDoc);
       console.log(result);
       res.send(result);
     });
