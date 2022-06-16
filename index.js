@@ -1,5 +1,5 @@
 console.clear();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -39,9 +39,59 @@ async function run() {
 
       res.send(result);
     });
+    app.put("/users/:id", async (req, res) => {
+      const { id } = req.params;
+      const { role } = req.body;
+
+      const updateDoc = {
+        $set: {
+          role: role,
+        },
+      };
+
+      const result = await usersCollection.updateOne(
+        { _id: ObjectId(id) },
+        updateDoc
+      );
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/users", async (req, res) => {
+      const usersCollection = client.db("cse326").collection("users");
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
     app.get("/users/:handle", async (req, res) => {
       const { handle } = req?.params;
       const result = await usersCollection.findOne({ handle });
+      console.log(result);
+      res.send(result);
+    });
+    app.post("/contests", async (req, res) => {
+      console.log(req?.body);
+      const contestsCollection = client.db("cse326").collection("contests");
+      const result = await contestsCollection.insertOne(req?.body);
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/contests", async (req, res) => {
+      const contestsCollection = client.db("cse326").collection("contests");
+      const result = await contestsCollection.find().toArray();
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/contests/:email", async (req, res) => {
+      const { email } = req?.params;
+      const contestsCollection = client.db("cse326").collection("contests");
+      const result = await contestsCollection.find({ email }).toArray();
+      console.log(result);
+      res.send(result);
+    });
+    app.delete("/contests/:id", async (req, res) => {
+      const { id } = req?.params;
+      const contestsCollection = client.db("cse326").collection("contests");
+      const result = await contestsCollection.deleteOne({ _id: ObjectId(id) });
+      console.log(result);
       res.send(result);
     });
   } finally {
