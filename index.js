@@ -77,6 +77,7 @@ async function run() {
     app.get("/contests", async (req, res) => {
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.find({ ...req?.query }).toArray();
+      result.sort((a, b) => b.startTime - a.startTime);
       console.log(result);
       res.send(result);
     });
