@@ -53,7 +53,7 @@ async function run() {
         { _id: ObjectId(id) },
         updateDoc
       );
-      console.log(result);
+      //console.log(result);
       res.send(result);
     });
     app.get("/users", async (req, res) => {
@@ -64,28 +64,28 @@ async function run() {
     app.get("/users/:handle", async (req, res) => {
       const { handle } = req?.params;
       const result = await usersCollection.findOne({ handle });
-      console.log(result);
+      //console.log(result);
       res.send(result);
     });
     app.post("/contests", async (req, res) => {
-      console.log(req?.body);
+      //console.log(req?.body);
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.insertOne(req?.body);
-      console.log(result);
+      //console.log(result);
       res.send(result);
     });
     app.get("/contests", async (req, res) => {
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.find({ ...req?.query }).toArray();
       result.sort((a, b) => b.startTime - a.startTime);
-      console.log(result);
+      //console.log(result);
       res.send(result);
     });
     app.get("/contests/:email", async (req, res) => {
       const { email } = req?.params;
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.find({ email }).toArray();
-      console.log(result);
+      //console.log(result);
       res.send(result);
     });
 
@@ -93,7 +93,7 @@ async function run() {
       const { id } = req?.params;
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.deleteOne({ _id: ObjectId(id) });
-      console.log(result);
+      //console.log(result);
       res.send(result);
     });
     app.put("/contests/:id", async (req, res) => {
@@ -107,6 +107,26 @@ async function run() {
         },
       };
       const result = await contestsCollection.updateOne(filter, updateDoc);
+      //console.log(result);
+      res.send(result);
+    });
+    app.post("/contests/:id/submit", async (req, res) => {
+      const { id } = req.params;
+      const submissionCollection = client.db("cse326").collection("submission");
+      const result = await submissionCollection.insertOne({
+        ...req?.body,
+        id: parseInt(id),
+      });
+      //console.log(result);
+      res.send(result);
+    });
+    app.get("/contests/:id/my", async (req, res) => {
+      const { id } = req.params;
+      const { email } = req?.headers;
+      const submissionCollection = client.db("cse326").collection("submission");
+      const result = await submissionCollection
+        .find({ id: parseInt(id), email })
+        .toArray();
       console.log(result);
       res.send(result);
     });
