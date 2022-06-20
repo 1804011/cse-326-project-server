@@ -1,7 +1,10 @@
 console.clear();
+var request = require("request");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { base64, createSubmission, getSubmission } = require("./judge0");
 const express = require("express");
 const cors = require("cors");
+const { compareOutput } = require("./checkVerdict");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -110,16 +113,28 @@ async function run() {
       //console.log(result);
       res.send(result);
     });
-    app.post("/contests/:id/submit", async (req, res) => {
-      const { id } = req.params;
-      const submissionCollection = client.db("cse326").collection("submission");
-      const result = await submissionCollection.insertOne({
-        ...req?.body,
-        id: parseInt(id),
-      });
-      //console.log(result);
-      res.send(result);
-    });
+    app.post(
+      "/contests/:id/submit",
+      createSubmission,
+      getSubmission,
+      async (req, res) => {
+        // const { id } = req.params;
+        // const submissionCollection = client
+        //   .db("cse326")
+        //   .collection("submission");
+        // const result = await submissionCollection.insertOne({
+        //   ...req?.body,
+        //   id: parseInt(id),
+        // });
+
+        // console.log(req?.body?.result?.submissions, req?.body?.output);
+        req.body.verdict = compareOutput(
+          req?.body?.result?.submissions,
+          req?.body?.output
+        );
+        res.send({ result: req?.body });
+      }
+    );
     app.get("/contests/:id/my", async (req, res) => {
       const { id } = req.params;
       const { email } = req?.headers;
