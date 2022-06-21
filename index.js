@@ -1,7 +1,7 @@
 console.clear();
 var request = require("request");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const { base64, createSubmission, getSubmission } = require("./judge0");
+const { createSubmission, getSubmission } = require("./judge0");
 const express = require("express");
 const cors = require("cors");
 const { compareOutput } = require("./checkVerdict");
@@ -144,7 +144,7 @@ async function run() {
         .find({ id: parseInt(id), email })
         .toArray();
       result.sort((a, b) => b.submissionTime - a.submissionTime);
-      console.log(result);
+      //console.log(result);
       res.send(result);
     });
   } finally {

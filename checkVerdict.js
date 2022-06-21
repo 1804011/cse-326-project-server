@@ -1,4 +1,4 @@
-const { encode, decode } = require("js-base64");
+const { encode, decode, encodeURL } = require("js-base64");
 
 const compareOutput = (output1, output2) => {
   console.log(output1, output2);
@@ -14,13 +14,15 @@ const compareOutput = (output1, output2) => {
     return "wrong answer";
   }
   for (i = 0; i < output2.length; i++) {
+    if (!stdout[i] || !output2[i]) return `wrong anser on test ${i + 1}`;
+
     let txt1 = decode(stdout[i])
-      .replaceAll("\n", " ")
+      ?.replaceAll("\n", " ")
       .split(" ")
       .filter((txt) => txt !== "")
       .map((txt) => txt.toLowerCase());
     let txt2 = output2[i]
-      .replaceAll("\n", " ")
+      ?.replaceAll("\n", " ")
       .split(" ")
       .filter((txt) => txt !== "")
       .map((txt) => txt.toLowerCase());

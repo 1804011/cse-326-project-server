@@ -1,11 +1,6 @@
 const { encode, decode } = require("js-base64");
 const request = require("request");
-const base64 = (data) => {
-  return encode(data);
-};
-const base64toStr = (data) => {
-  return decode(data);
-};
+
 const createSubmission = async (req, res, next) => {
   const { id } = req.params;
   const {
@@ -99,8 +94,6 @@ const getSubmission = async (req, res, next) => {
   }, 15000);
 };
 module.exports = {
-  base64,
   createSubmission,
   getSubmission,
-  base64toStr,
 };
