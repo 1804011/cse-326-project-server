@@ -118,21 +118,22 @@ async function run() {
       createSubmission,
       getSubmission,
       async (req, res) => {
-        // const { id } = req.params;
-        // const submissionCollection = client
-        //   .db("cse326")
-        //   .collection("submission");
-        // const result = await submissionCollection.insertOne({
-        //   ...req?.body,
-        //   id: parseInt(id),
-        // });
-
         // console.log(req?.body?.result?.submissions, req?.body?.output);
         req.body.verdict = compareOutput(
           req?.body?.result?.submissions,
           req?.body?.output
         );
-        res.send({ result: req?.body });
+        const { id } = req.params;
+        const submissionCollection = client
+          .db("cse326")
+          .collection("submission");
+        const result = await submissionCollection.insertOne({
+          ...req?.body,
+          id: parseInt(id),
+        });
+        // console.log(result);
+        res.send(result);
+        //res.send({ result: req?.body });
       }
     );
     app.get("/contests/:id/my", async (req, res) => {
@@ -142,6 +143,7 @@ async function run() {
       const result = await submissionCollection
         .find({ id: parseInt(id), email })
         .toArray();
+      result.sort((a, b) => b.submissionTime - a.submissionTime);
       console.log(result);
       res.send(result);
     });

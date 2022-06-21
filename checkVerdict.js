@@ -3,7 +3,7 @@ const { encode, decode } = require("js-base64");
 const compareOutput = (output1, output2) => {
   console.log(output1, output2);
   let stdout = [];
-  for (let i = 0; i < output1.length; i++) {
+  for (let i = 0; i < output1?.length; i++) {
     if (output1[i].status.id !== 3) {
       return output1[i].status.description;
     } else {

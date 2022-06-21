@@ -17,7 +17,7 @@ const createSubmission = async (req, res, next) => {
     cpu_extra_time,
   } = req?.body;
   let submissions = [];
-  for (let i = 0; i < stdin.length; i++) {
+  for (let i = 0; i < stdin?.length; i++) {
     const obj = {
       language_id,
       cpu_extra_time,
@@ -63,12 +63,12 @@ const createSubmission = async (req, res, next) => {
 };
 const getSubmission = async (req, res, next) => {
   let string = "";
-  let sz = req?.tokens.length;
+  let sz = req?.tokens?.length;
   for (let i = 0; i < sz; i++) {
     if (i == sz - 1) {
-      string += req?.tokens[i].token;
+      string += req?.tokens[i]?.token;
     } else {
-      string = string + req?.tokens[i].token + ",";
+      string = string + req?.tokens[i]?.token + ",";
     }
   }
 
