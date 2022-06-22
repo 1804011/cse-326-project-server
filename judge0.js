@@ -51,7 +51,7 @@ const createSubmission = async (req, res, next) => {
 
   request(options, function (error, response, body) {
     if (error) throw new Error(error);
-
+    console.log(body);
     req.tokens = body;
     next();
   });
