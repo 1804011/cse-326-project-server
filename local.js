@@ -13,7 +13,7 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wf9uh.mongodb.net/?retryWrites=true&w=majority`;
+const uri = "mongodb://localhost:27017";
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -113,7 +113,7 @@ async function run() {
       //console.log(result);
       res.send(result);
     });
-    app.post(
+    app.put(
       "/contests/:id/submit",
       createSubmission,
       getSubmission,
@@ -124,15 +124,19 @@ async function run() {
           req?.body?.output
         );
         const { id } = req.params;
-        const submissionCollection = client
-          .db("cse326")
-          .collection("submission");
-        const result = await submissionCollection.insertOne({
-          ...req?.body,
-          id: parseInt(id),
-        });
+        const submissionCollection = client.db("cse326").collection("contests");
+        const filter = { id };
+        const updateDocs = {
+          $push: {
+            submissions: [req?.body?.handle].req?.body,
+          },
+        };
+        const result = await submissionCollection.updateOne(filter, updateDocs);
+        console.log(result);
+        res.send({ result: req?.body });
+
         // console.log(result);
-        res.send(result);
+
         //res.send({ result: req?.body });
       }
     );
@@ -162,19 +166,6 @@ async function run() {
       const data = result.filter((a) => a.submissionTime - time <= duration);
       console.dir(data);
       res.send(data);
-    });
-    app.post("/role", async (req, res) => {
-      const { email, handle } = req?.body;
-      const roleRequestCollection = client.db("cse326").collection("role");
-      const result = await roleRequestCollection.insertOne({ email, handle });
-      console.log(result);
-      res.send(result);
-    });
-    app.get("/role", async (req, res) => {
-      const roleRequestCollection = client.db("cse326").collection("role");
-      const result = await roleRequestCollection.find().toArray();
-      console.log(result);
-      res.send(result);
     });
   } finally {
     //await client.close();
