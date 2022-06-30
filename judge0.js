@@ -3,6 +3,7 @@ const request = require("request");
 
 const createSubmission = async (req, res, next) => {
   const { id } = req.params;
+  //console.log(id);
   const {
     source_code,
     language_id,
@@ -51,7 +52,7 @@ const createSubmission = async (req, res, next) => {
 
   request(options, function (error, response, body) {
     if (error) throw new Error(error);
-    console.log(body);
+    //console.log(body);
     req.tokens = body;
     next();
   });
@@ -86,7 +87,8 @@ const getSubmission = async (req, res, next) => {
     request(options, function (error, response, body) {
       if (error) throw new Error(error);
 
-      //console.log(JSON.parse(body));
+      ////console.log(JSON.parse(body));
+      ////console.log(body);
       req.body.result = JSON.parse(body);
 
       next();
