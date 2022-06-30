@@ -82,10 +82,9 @@ async function run() {
       console.log(req?.query);
       const result = await contestsCollection
         .find({
-          ...req?.query,
           status: {
-            $ne: "pending",
-            $eq: "published",
+            $nin: ["pending", "discarded"],
+            $in: ["published", req?.query?.requested],
           },
         })
         .toArray();
@@ -93,7 +92,7 @@ async function run() {
       //console.log(result);
       //console.log(req?.query);
       // console.log(result);
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
     app.get("/contests/:email", async (req, res) => {
@@ -101,6 +100,7 @@ async function run() {
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.find({ email }).toArray();
       //console.log(result);
+      result.sort((a, b) => b.startTime - a.startTime);
       res.send(result);
     });
 
