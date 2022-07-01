@@ -223,6 +223,7 @@ async function run() {
                   problem: "$problem",
                   submissionTime: "$submissionTime",
                   mark: "$mark",
+                  verdict: "$verdict",
                 },
               },
             },
