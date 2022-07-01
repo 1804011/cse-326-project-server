@@ -144,7 +144,7 @@ async function run() {
           ...req?.body,
           id: parseInt(id),
         });
-        // //console.log(result);
+        // console.log(req.body);
         res.send(result);
         //res.send({ result: req?.body });
       }
@@ -157,7 +157,7 @@ async function run() {
         .find({ id: parseInt(id), email })
         .toArray();
       result.sort((a, b) => b.submissionTime - a.submissionTime);
-      ////console.log(result);
+      //console.log(result);
       res.send(result);
     });
     app.get("/contests/:id/submissions", async (req, res) => {
@@ -171,9 +171,9 @@ async function run() {
           id: parseInt(id),
         })
         .toArray();
-      console.dir(result);
+      // console.dir(result);
       const data = result.filter((a) => a.submissionTime - time <= duration);
-      console.dir(data);
+      // console.dir(data);
       res.send(data);
     });
     app.post("/role", async (req, res) => {
@@ -187,6 +187,50 @@ async function run() {
       const roleRequestCollection = client.db("cse326").collection("role");
       const result = await roleRequestCollection.find().toArray();
       ////console.log(result);
+      res.send(result);
+    });
+    app.get("/submissions", async (req, res) => {
+      const { id, starttime, duration } = req.headers;
+      // console.log(id, starttime, duration);
+      const submissionCollection = client.db("cse326").collection("submission");
+
+      const result = await submissionCollection
+        .aggregate([
+          {
+            $match: {
+              id: {
+                $in: [parseInt(id)],
+              },
+              submissionTime: {
+                $gte: parseInt(starttime),
+                $lte: parseInt(starttime) + parseInt(duration),
+              },
+            },
+          },
+          {
+            $sort: {
+              submissionTime: -1,
+            },
+          },
+          {
+            $group: {
+              _id: {
+                handle: "$handle",
+              },
+              submissions: {
+                $addToSet: {
+                  source_code: "$source_code",
+                  problem: "$problem",
+                  submissionTime: "$submissionTime",
+                  mark: "$mark",
+                },
+              },
+            },
+          },
+        ])
+        .toArray();
+
+      //console.log(result);
       res.send(result);
     });
   } finally {
