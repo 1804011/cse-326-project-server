@@ -1,5 +1,6 @@
 console.clear();
 var request = require("request");
+const { getNewRatings } = require("codeforces-rating-system");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { createSubmission, getSubmission } = require("./judge0");
 const express = require("express");
@@ -70,12 +71,154 @@ async function run() {
       ////console.log(result);
       res.send(result);
     });
+
+    app.get("/contests/:id", async (req, res) => {
+      const { id } = req?.params;
+
+      const contestsCollection = client.db("cse326").collection("contests");
+      if (isNaN(parseInt(id))) {
+        const result = await contestsCollection.find({ email: id }).toArray();
+        result.sort((a, b) => b.startTime - a.startTime);
+        res.send(result);
+      } else {
+        const result = await contestsCollection.findOne({ id });
+        // result.sort((a, b) => b.startTime - a.startTime);
+        res.send(result);
+      }
+    });
     app.post("/contests", async (req, res) => {
       ////console.log(req?.body);
+      const { startTime, duration, id } = req?.body;
+      const date = new Date().getTime();
+
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.insertOne(req?.body);
+
       ////console.log(result);
       res.send(result);
+      if (result?.acknowledged) {
+        setTimeout(async () => {
+          console.log(id, startTime, duration);
+          const submissionCollection = client
+            .db("cse326")
+            .collection("submission");
+
+          const submissions = await submissionCollection
+            .aggregate([
+              {
+                $match: {
+                  id: {
+                    $in: [parseInt(id)],
+                  },
+                  submissionTime: {
+                    $gte: parseInt(startTime),
+                    $lte: parseInt(startTime) + parseInt(duration),
+                  },
+                },
+              },
+              {
+                $sort: {
+                  submissionTime: -1,
+                },
+              },
+              {
+                $group: {
+                  _id: {
+                    handle: "$handle",
+                  },
+                  submissions: {
+                    $addToSet: {
+                      source_code: "$source_code",
+                      problem: "$problem",
+                      submissionTime: "$submissionTime",
+                      mark: "$mark",
+                      verdict: "$verdict",
+                    },
+                  },
+                },
+              },
+            ])
+            .toArray();
+          let sz = submissions.length;
+          for (let i = 0; i < sz; i++) {
+            const handle = submissions[i]._id.handle;
+            let marks = 0;
+            let accepted = [];
+            let ok = 0;
+            let tried = [-1, -1, -1];
+            let ttl = submissions[i].submissions.length;
+            let visit = [-1, -1, -1];
+            submissions[i].submissions.sort(
+              (a, b) => b.submissionTime - a.submissionTime
+            );
+            for (let j = 0; j < ttl; j++) {
+              let submission = submissions[i].submissions[j];
+              if (submission.verdict == "Accepted") {
+                let k = submission.problem;
+                if (visit[k] == -1) {
+                  accepted[k] = {
+                    problem: k,
+                    submissionTime: submission.submissionTime,
+                    mark: submission.mark,
+                  };
+                  ok++;
+                  marks += parseInt(submission.mark);
+                  visit[k] = 1;
+                }
+              } else {
+                let k = submission.problem;
+                if (visit[k] == -1) {
+                  tried[k] = k;
+                }
+                visit[k] = 1;
+              }
+            }
+
+            marks = marks - 10 * (ttl - accepted.length);
+            submissions[i].score = marks;
+            if (submissions[i].score < 0) {
+              submissions[i].score = 0;
+            }
+            submissions[i].accepted = accepted;
+            submissions[i].penalty = 10 * (ttl - accepted.length);
+            submissions[i].handle = handle;
+            submissions[i].tried = tried;
+            submissions[i].ok = ok;
+          }
+          submissions.sort((a, b) => b.score - a.score);
+          const contestants = [];
+
+          for (let i = 0; i < submissions.length; i++) {
+            let contestant = {};
+            contestant.username = submissions[i].handle;
+            contestant.position = i + 1;
+            const rating = await client
+              .db("cse326")
+              .collection("ratings")
+              .findOne({ handle: contestant.username });
+
+            contestant.previousRating = rating?.rating || 200;
+            contestants.push(contestant);
+          }
+          let newRating = getNewRatings(contestants);
+          console.log(newRating);
+          for (let i = 0; i < newRating.length; i++) {
+            const contestant = newRating[i];
+            const ratingCollection = client.db("cse326").collection("ratings");
+            await ratingCollection.updateOne(
+              { handle: contestant?.username },
+              {
+                $set: {
+                  rating: parseInt(contestant.newRating),
+                },
+              },
+              {
+                upsert: true,
+              }
+            );
+          }
+        }, startTime + duration - date);
+      }
     });
     app.get("/contests", async (req, res) => {
       const contestsCollection = client.db("cse326").collection("contests");
@@ -95,17 +238,10 @@ async function run() {
       //////console.log(result);
       res.send(result);
     });
-    app.get("/contests/:email", async (req, res) => {
-      const { email } = req?.params;
-      const contestsCollection = client.db("cse326").collection("contests");
-      const result = await contestsCollection.find({ email }).toArray();
-      ////console.log(result);
-      result.sort((a, b) => b.startTime - a.startTime);
-      res.send(result);
-    });
 
     app.delete("/contests/:id", async (req, res) => {
       const { id } = req?.params;
+
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.deleteOne({ _id: ObjectId(id) });
       ////console.log(result);
@@ -233,6 +369,14 @@ async function run() {
 
       //console.log(result);
       res.send(result);
+    });
+    app.get("/ratings/:handle", async (req, res) => {
+      const { handle } = req?.params;
+      console.log(handle);
+      const ratingCollection = client.db("cse326").collection("ratings");
+      const rating = await ratingCollection.findOne({ handle });
+      console.log(rating);
+      res.send(rating);
     });
   } finally {
     //await client.close();
