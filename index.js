@@ -378,6 +378,26 @@ async function run() {
       console.log(rating);
       res.send(rating);
     });
+    app.put("/users/social/:email", async (req, res) => {
+      const { email } = req?.params;
+      const usersCollection = client.db("cse326").collection("users");
+      const filter = { email };
+      const updateDoc = {
+        $set: {
+          ...req?.body,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/profile/:email", async (req, res) => {
+      const { email } = req?.params;
+      const usersCollection = client.db("cse326").collection("users");
+      const result = await usersCollection.findOne({ email });
+      console.log(result);
+      res.send(result);
+    });
   } finally {
     //await client.close();
   }
