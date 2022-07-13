@@ -98,7 +98,6 @@ async function run() {
       res.send(result);
       if (result?.acknowledged) {
         setTimeout(async () => {
-          console.log(id, startTime, duration);
           const submissionCollection = client
             .db("cse326")
             .collection("submission");
@@ -201,7 +200,18 @@ async function run() {
             contestants.push(contestant);
           }
           let newRating = getNewRatings(contestants);
-          console.log(newRating);
+          await client
+            .db("cse326")
+            .collection("contests")
+            .updateOne(
+              { identity: parseInt(id) },
+              {
+                $set: {
+                  standing: submissions,
+                  newRating,
+                },
+              }
+            );
           for (let i = 0; i < newRating.length; i++) {
             const contestant = newRating[i];
             const ratingCollection = client.db("cse326").collection("ratings");
@@ -222,7 +232,6 @@ async function run() {
     });
     app.get("/contests", async (req, res) => {
       const contestsCollection = client.db("cse326").collection("contests");
-      ////console.log(req?.query);
       const result = await contestsCollection
         .find({
           status: {
@@ -232,10 +241,7 @@ async function run() {
         })
         .toArray();
       result.sort((a, b) => b.startTime - a.startTime);
-      ////console.log(result);
-      ////console.log(req?.query);
-      //////console.log(result);
-      //////console.log(result);
+
       res.send(result);
     });
 
@@ -396,6 +402,27 @@ async function run() {
       const usersCollection = client.db("cse326").collection("users");
       const result = await usersCollection.findOne({ email });
       console.log(result);
+      res.send(result);
+    });
+    app.get("/submissions/:handle", async (req, res) => {
+      const { handle } = req?.params;
+      const submissionCollection = client.db("cse326").collection("submission");
+      const result = await submissionCollection.find({ handle }).toArray();
+      res.send(result);
+    });
+    app.get("/profile/contests/:handle", async (req, res) => {
+      const { handle } = req?.params;
+      const contestsCollection = client.db("cse326").collection("contests");
+      const result = await contestsCollection
+        .find({
+          standing: {
+            $elemMatch: {
+              handle,
+            },
+          },
+        })
+        .toArray();
+      result.sort((a, b) => b.startTime - a.startTime);
       res.send(result);
     });
   } finally {
