@@ -227,7 +227,7 @@ async function run() {
               }
             );
           }
-        }, startTime + duration - date);
+        }, startTime + duration + 30000 - date);
       }
     });
     app.get("/contests", async (req, res) => {
@@ -408,6 +408,7 @@ async function run() {
       const { handle } = req?.params;
       const submissionCollection = client.db("cse326").collection("submission");
       const result = await submissionCollection.find({ handle }).toArray();
+      result.sort((a, b) => b.submissionTime - a.submissionTime);
       res.send(result);
     });
     app.get("/profile/contests/:handle", async (req, res) => {
