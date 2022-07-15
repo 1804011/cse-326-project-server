@@ -4,7 +4,9 @@ const compareOutput = (output1, output2) => {
   console.log(output1, output2);
   let stdout = [];
   for (let i = 0; i < output1?.length; i++) {
-    if (output1[i]?.status?.id !== 3) {
+    if (output1[i]?.status?.id >= 7 && output1[i]?.status?.id <= 12)
+      return "Runtime Error";
+    else if (output1[i]?.status?.id !== 3) {
       return output1[i]?.status?.description;
     } else {
       stdout.push(output1[i].stdout);
