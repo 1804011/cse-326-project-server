@@ -57,7 +57,7 @@ async function run() {
         { _id: ObjectId(id) },
         updateDoc
       );
-      ////console.log(result);
+      //console.log(result);
       res.send(result);
     });
     app.get("/users", async (req, res) => {
@@ -68,7 +68,7 @@ async function run() {
     app.get("/users/:handle", async (req, res) => {
       const { handle } = req?.params;
       const result = await usersCollection.findOne({ handle });
-      ////console.log(result);
+      ////////////////////console.log(result);
       res.send(result);
     });
 
@@ -87,14 +87,14 @@ async function run() {
       }
     });
     app.post("/contests", async (req, res) => {
-      ////console.log(req?.body);
-      const { startTime, duration, id } = req?.body;
+      ////////////////////console.log(req?.body);
+      const { startTime, duration, id, problems } = req?.body;
       const date = new Date().getTime();
 
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.insertOne(req?.body);
 
-      ////console.log(result);
+      ////////////////////console.log(result);
       res.send(result);
       if (result?.acknowledged) {
         setTimeout(async () => {
@@ -227,7 +227,23 @@ async function run() {
               }
             );
           }
-        }, startTime + duration + 30000 - date);
+          let problemsSize = problems.length;
+          console.log(problems);
+          let data = [];
+          for (let i = 0; i < problemsSize; i++) {
+            const obj = {};
+            obj.id = id + "-" + String.fromCharCode(i + 65);
+            obj.title = problems[i].title;
+            obj.rating = problems[i].rating;
+            data.push(obj);
+          }
+
+          let insertionResult = await client
+            .db("cse326")
+            .collection("problemsets")
+            .insertMany(data);
+          console.log(insertionResult);
+        }, startTime + duration + 10000 - date);
       }
     });
     app.get("/contests", async (req, res) => {
@@ -250,7 +266,7 @@ async function run() {
 
       const contestsCollection = client.db("cse326").collection("contests");
       const result = await contestsCollection.deleteOne({ _id: ObjectId(id) });
-      ////console.log(result);
+      ////////////////////console.log(result);
       res.send(result);
     });
     app.put("/contests/:id", async (req, res) => {
@@ -264,7 +280,7 @@ async function run() {
         },
       };
       const result = await contestsCollection.updateOne(filter, updateDoc);
-      ////console.log(result);
+      ////////////////////console.log(result);
       res.send(result);
     });
     app.post(
@@ -272,7 +288,7 @@ async function run() {
       createSubmission,
       getSubmission,
       async (req, res) => {
-        //////console.log(req?.body?.result?.submissions, req?.body?.output);
+        //////////////////////console.log(req?.body?.result?.submissions, req?.body?.output);
         req.body.verdict = compareOutput(
           req?.body?.result?.submissions,
           req?.body?.output
@@ -286,7 +302,7 @@ async function run() {
           ...req?.body,
           id: parseInt(id),
         });
-        // console.log(req.body);
+        // ////////////////console.log(req.body);
         res.send(result);
         //res.send({ result: req?.body });
       }
@@ -299,7 +315,7 @@ async function run() {
         .find({ id: parseInt(id), email })
         .toArray();
       result.sort((a, b) => b.submissionTime - a.submissionTime);
-      //console.log(result);
+      //////////////////console.log(result);
       res.send(result);
     });
     app.get("/contests/:id/submissions", async (req, res) => {
@@ -307,7 +323,7 @@ async function run() {
       const { time, duration } = req?.headers;
       const submissionCollection = client.db("cse326").collection("submission");
 
-      ////console.log(time, duration);
+      ////////////////////console.log(time, duration);
       const result = await submissionCollection
         .find({
           id: parseInt(id),
@@ -322,18 +338,18 @@ async function run() {
       const { email, handle } = req?.body;
       const roleRequestCollection = client.db("cse326").collection("role");
       const result = await roleRequestCollection.insertOne({ email, handle });
-      ////console.log(result);
+      ////////////////////console.log(result);
       res.send(result);
     });
     app.get("/role", async (req, res) => {
       const roleRequestCollection = client.db("cse326").collection("role");
       const result = await roleRequestCollection.find().toArray();
-      ////console.log(result);
+      ////////////////////console.log(result);
       res.send(result);
     });
     app.get("/submissions", async (req, res) => {
       const { id, starttime, duration } = req.headers;
-      // console.log(id, starttime, duration);
+      // ////////////////console.log(id, starttime, duration);
       const submissionCollection = client.db("cse326").collection("submission");
 
       const result = await submissionCollection
@@ -373,15 +389,15 @@ async function run() {
         ])
         .toArray();
 
-      //console.log(result);
+      //////////////////console.log(result);
       res.send(result);
     });
     app.get("/ratings/:handle", async (req, res) => {
       const { handle } = req?.params;
-      console.log(handle);
+      ////////////////console.log(handle);
       const ratingCollection = client.db("cse326").collection("ratings");
       const rating = await ratingCollection.findOne({ handle });
-      console.log(rating);
+      ////////////////console.log(rating);
       res.send(rating);
     });
     app.put("/users/social/:email", async (req, res) => {
@@ -394,14 +410,14 @@ async function run() {
         },
       };
       const result = await usersCollection.updateOne(filter, updateDoc);
-      console.log(result);
+      ////////////////console.log(result);
       res.send(result);
     });
     app.get("/profile/:email", async (req, res) => {
       const { email } = req?.params;
       const usersCollection = client.db("cse326").collection("users");
       const result = await usersCollection.findOne({ email });
-      console.log(result);
+      ////////////////console.log(result);
       res.send(result);
     });
     app.get("/submissions/:handle", async (req, res) => {
@@ -424,6 +440,15 @@ async function run() {
         })
         .toArray();
       result.sort((a, b) => b.startTime - a.startTime);
+      res.send(result);
+    });
+    app.get("/problemsets", async (req, res) => {
+      const result = await client
+        .db("cse326")
+        .collection("problemsets")
+        .find({})
+        .toArray();
+      // console.log(result);
       res.send(result);
     });
   } finally {
