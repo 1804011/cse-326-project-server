@@ -451,6 +451,116 @@ async function run() {
       // console.log(result);
       res.send(result);
     });
+    app.post("/dashboard/add-problem", async (req, res) => {
+      const data = req?.body;
+      const result = await client
+        .db("cse326")
+        .collection("offline-problems")
+        .insertOne(data);
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/offline/:email", async (req, res) => {
+      const { email } = req?.params;
+      const result = await client
+        .db("cse326")
+        .collection("offline-problems")
+        .find({ email })
+        .toArray();
+      res.send(result.reverse());
+    });
+    app.put("/offline/problems/:id", async (req, res) => {
+      const { id } = req?.params;
+      const problemsCollection = client
+        .db("cse326")
+        .collection("offline-problems");
+      const updateDoc = {
+        $set: {
+          ...req?.body,
+        },
+      };
+      const result = await problemsCollection.updateOne(
+        { _id: ObjectId(id) },
+        updateDoc
+      );
+      ////////////////console.log(result);
+      res.send(result);
+    });
+    app.delete("/offline/problem/:id", async (req, res) => {
+      const { id } = req?.params;
+      const problemsCollection = client
+        .db("cse326")
+        .collection("offline-problems");
+      const result = await problemsCollection.deleteOne({ _id: ObjectId(id) });
+      res.send(result);
+    });
+    app.get("/offline-problems", async (req, res) => {
+      const result = await client
+        .db("cse326")
+        .collection("offline-problems")
+        .find({
+          status: {
+            $nin: ["pending"],
+          },
+        })
+        .toArray();
+      res.send(result.reverse());
+    });
+    app.put("/offline-problems/:id", async (req, res) => {
+      const { id } = req?.params;
+      const problemsCollection = client
+        .db("cse326")
+        .collection("offline-problems");
+      const updateDoc = {
+        $set: {
+          ...req?.body,
+        },
+      };
+      const result = await problemsCollection.updateOne(
+        { _id: ObjectId(id) },
+        updateDoc
+      );
+      ////////////////console.log(result);
+      res.send(result);
+    });
+    app.get("/problemsets/offline", async (req, res) => {
+      const result = await client
+        .db("cse326")
+        .collection("offline-problems")
+        .find({ status: "published" })
+        .toArray();
+      res.send(result.reverse());
+    });
+    app.get("/offline-problems/:id", async (req, res) => {
+      const { id } = req?.params;
+      const result = await client
+        .db("cse326")
+        .collection("offline-problems")
+        .findOne({ _id: ObjectId(id) });
+      res.send(result);
+    });
+    app.post(
+      "/offline-problems/:id/submit",
+      createSubmission,
+      getSubmission,
+      async (req, res) => {
+        req.body.verdict = compareOutput(
+          req?.body?.result?.submissions,
+          req?.body?.output
+        );
+
+        const { id } = req.params;
+        const submissionCollection = client
+          .db("cse326")
+          .collection("submission");
+        const result = await submissionCollection.insertOne({
+          ...req?.body,
+          id: parseInt(id),
+        });
+        // ////////////////console.log(req.body);
+        res.send(result);
+      }
+    );
   } finally {
     //await client.close();
   }
