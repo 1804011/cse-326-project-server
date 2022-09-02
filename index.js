@@ -63,7 +63,7 @@ async function run() {
     app.get("/users", async (req, res) => {
       const usersCollection = client.db("cse326").collection("users");
       const result = await usersCollection.find().toArray();
-      res.send(result);
+      res.send(result.reverse());
     });
     app.get("/users/:handle", async (req, res) => {
       const { handle } = req?.params;
