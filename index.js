@@ -27,6 +27,7 @@ async function run() {
     const usersCollection = client.db("cse326").collection("users");
 
     app.put("/users", async (req, res) => {
+
       const filter = { email: req?.body?.email };
       const updateDoc = {
         $set: {
@@ -61,6 +62,7 @@ async function run() {
       res.send(result);
     });
     app.get("/users", async (req, res) => {
+      res.send({ user: process.env.DB_USER });
       const usersCollection = client.db("cse326").collection("users");
       const result = await usersCollection.find().toArray();
       res.send(result.reverse());
