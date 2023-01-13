@@ -20,7 +20,10 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-
+app.get("/users", (req, res) => {
+  console.log("ok");
+  res.send({ pass: process.env.DB_PASS })
+})
 async function run() {
   try {
     await client.connect();
@@ -573,6 +576,7 @@ run().catch(console.dir);
 app.get("/", (req, res) => {
   res.send("welcome to our server");
 });
+
 app.listen(port, () => {
   console.log("listening to port", port);
 });
