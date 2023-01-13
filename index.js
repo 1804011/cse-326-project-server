@@ -20,10 +20,10 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-app.get("/users", (req, res) => {
-  console.log("ok");
-  res.send({ pass: process.env.DB_PASS })
-})
+// app.get("/users", (req, res) => {
+//   console.log("ok");
+//   res.send({ pass: process.env.DB_PASS })
+// })
 async function run() {
   try {
     await client.connect();
@@ -65,8 +65,6 @@ async function run() {
       res.send(result);
     });
     app.get("/users", async (req, res) => {
-      res.send({ pass: process.env.DB_PASS });
-      return;
       const usersCollection = client.db("cse326").collection("users");
       const result = await usersCollection.find().toArray();
       res.send(result.reverse());
