@@ -12,10 +12,11 @@ const port = process.env.PORT || 5000;
 
 //middleware
 app.use(express.json());
-app.use(cors({
-  origin: "*",
-
-}));
+const corsOptions = {
+  origin: "https://cse-326-project-91c7b.web.app",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+};
+app.use(cors(corsOptions));
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wf9uh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
@@ -24,11 +25,9 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-
 const usersCollection = client.db("cse326").collection("users");
 
 app.put("/users", async (req, res) => {
-
   const filter = { email: req?.body?.email };
   const updateDoc = {
     $set: {
@@ -37,11 +36,7 @@ app.put("/users", async (req, res) => {
     },
   };
   const options = { upsert: true };
-  const result = await usersCollection.updateOne(
-    filter,
-    updateDoc,
-    options
-  );
+  const result = await usersCollection.updateOne(filter, updateDoc, options);
 
   res.send(result);
 });
@@ -100,9 +95,7 @@ app.post("/contests", async (req, res) => {
   res.send(result);
   if (result?.acknowledged) {
     setTimeout(async () => {
-      const submissionCollection = client
-        .db("cse326")
-        .collection("submission");
+      const submissionCollection = client.db("cse326").collection("submission");
 
       const submissions = await submissionCollection
         .aggregate([
@@ -297,9 +290,7 @@ app.post(
     );
 
     const { id } = req.params;
-    const submissionCollection = client
-      .db("cse326")
-      .collection("submission");
+    const submissionCollection = client.db("cse326").collection("submission");
     const result = await submissionCollection.insertOne({
       ...req?.body,
       id: parseInt(id),
@@ -473,9 +464,7 @@ app.get("/offline/:email", async (req, res) => {
 });
 app.put("/offline/problems/:id", async (req, res) => {
   const { id } = req?.params;
-  const problemsCollection = client
-    .db("cse326")
-    .collection("offline-problems");
+  const problemsCollection = client.db("cse326").collection("offline-problems");
   const updateDoc = {
     $set: {
       ...req?.body,
@@ -490,9 +479,7 @@ app.put("/offline/problems/:id", async (req, res) => {
 });
 app.delete("/offline/problem/:id", async (req, res) => {
   const { id } = req?.params;
-  const problemsCollection = client
-    .db("cse326")
-    .collection("offline-problems");
+  const problemsCollection = client.db("cse326").collection("offline-problems");
   const result = await problemsCollection.deleteOne({ _id: ObjectId(id) });
   res.send(result);
 });
@@ -510,9 +497,7 @@ app.get("/offline-problems", async (req, res) => {
 });
 app.put("/offline-problems/:id", async (req, res) => {
   const { id } = req?.params;
-  const problemsCollection = client
-    .db("cse326")
-    .collection("offline-problems");
+  const problemsCollection = client.db("cse326").collection("offline-problems");
   const updateDoc = {
     $set: {
       ...req?.body,
@@ -552,9 +537,7 @@ app.post(
     );
 
     const { id } = req.params;
-    const submissionCollection = client
-      .db("cse326")
-      .collection("submission");
+    const submissionCollection = client.db("cse326").collection("submission");
     const result = await submissionCollection.insertOne({
       ...req?.body,
       id: parseInt(id),
@@ -563,9 +546,6 @@ app.post(
     res.send(result);
   }
 );
-
-
-
 
 app.get("/", (req, res) => {
   res.send("welcome to our server");
