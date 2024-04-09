@@ -13,7 +13,7 @@ const port = process.env.PORT || 5000;
 //middleware
 app.use(express.json());
 const corsOptions = {
-  origin: "https://cse-326-project-91c7b.web.app",
+  origin: "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
 };
 app.use(cors(corsOptions));
@@ -24,7 +24,15 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 const usersCollection = client.db("cse326").collection("users");
 
 app.put("/users", async (req, res) => {
