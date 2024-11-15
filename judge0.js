@@ -93,7 +93,7 @@ const getSubmission = async (req, res, next) => {
 
       next();
     });
-  }, 15000);
+  }, 8000);
 };
 module.exports = {
   createSubmission,
